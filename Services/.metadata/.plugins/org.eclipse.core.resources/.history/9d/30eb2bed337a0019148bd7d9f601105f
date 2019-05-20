@@ -1,0 +1,51 @@
+package gov.employee.check.controller;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+
+
+import gov.employee.check.domain.Employee;
+import gov.employee.check.repository.Employeerepository;
+
+
+
+@RestController
+@RequestMapping(value = "/employee")
+@CrossOrigin(origins = "*")
+public class Employeecontroller {
+	
+	@Autowired
+	Employeerepository employeerepository;
+	
+	@RequestMapping(value = "/add",method=RequestMethod.GET)
+	public List<Employee> showEmployee(){
+		return employeerepository.findAll();
+	}
+	
+	
+	@RequestMapping(value = "/add",method=RequestMethod.POST)
+	public ResponseEntity<?> addEmployee(@RequestBody Employee employee){
+		System.out.println("sachin");
+		employee.setId(UUID.randomUUID().toString());
+		employeerepository.save(employee);
+		return new ResponseEntity<>(null, HttpStatus.CREATED);
+	}
+	
+	@RequestMapping(value = "/{nic}",method=RequestMethod.GET)
+	public Employee getnic(@PathVariable("nic") String nic ){
+		System.out.println(nic);
+		return employeerepository.findByNic(nic);
+	}
+
+}

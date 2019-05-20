@@ -1,0 +1,77 @@
+package com.train.details.train.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
+
+import com.train.details.train.domain.Train;
+import com.train.details.train.repository.TrainRepository;
+
+@RestController
+@RequestMapping(value = "/trains")
+@CrossOrigin(origins = "*")
+public class TrainController {
+
+	@Autowired
+	TrainRepository trainRepository;
+
+	@Autowired
+	MongoTemplate mongoTemplate;
+
+	@RequestMapping(value = "/details", method = RequestMethod.GET)
+	public List<Train> getTrain() {
+		return trainRepository.findAll();
+	}
+
+	@RequestMapping(value = "/details", method = RequestMethod.POST)
+	public ResponseEntity<?> addTrain(@RequestBody Train train) {
+
+		train.setId(UUID.randomUUID().toString());
+		trainRepository.save(train);
+		return new ResponseEntity<>(null, HttpStatus.CREATED);
+	}
+
+	@RequestMapping(value = "/details/{start}/{end}", method = RequestMethod.GET)
+	public List<Train> getTrainLocation(@PathVariable("start") String start, @PathVariable("end") String end) {
+		return trainRepository.findByStartlocationAndEndlocation(start, end);
+	}
+
+	@RequestMapping(value = "/details/{type}", method = RequestMethod.GET)
+	public List getTrainstart(@PathVariable("type") String type) {
+		Aggregation aggr = newAggregation(group(type));
+		AggregationResults<Train> re = mongoTemplate.aggregate(aggr, "train", Train.class);
+
+		List lo = new ArrayList();
+
+		for (Train var : re) {
+			lo.add(var.getId());
+		}
+		return lo;
+	}
+
+	
+	 @RequestMapping(value = "/details/{id}",method=RequestMethod.GET) public
+	  Train getTrainLocation(@PathVariable("id") String id){
+	  
+	 
+	 return trainRepository.findById(id).get(); }
+	 
+
+}

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>National Railway Booking</title>
+	
+	<link rel="icon" type="image/png" href="images/icon.png"/>
+
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+
+
+<style type="text/css">
+	.a{
+		font-weight: 900;
+		color: #fff;
+		font-size: 26px;
+	}
+</style>
+</head>
+<body onload="setStartAndEnd()">
+
+	<div class="bg-contact100" style="background-image: url('images/bg-01.jpg');">
+		<div class="container-contact100">
+			<div class="container">
+				<div align="center">
+					<img src="images/icon.png" width="10%" >
+					<h1 style="text-decoration: solid;font-size: -webkit-xxx-large;">National Railway Booking</h1>
+				</div>
+				<form style="padding-top: 40px">
+				  <div class="form-row" >
+				    <div class="form-group col-md-6 " id="divstart">
+				      
+				      <select class="form-control" id="start" onchange="settrain()">
+				      	<option value="0">Start Location</option>
+				      </select>
+				    </div>
+				    <div class="form-group col-md-6">
+				      
+				      
+				      <select class="form-control" id="end" onchange="settrain()">
+				      	<option value="0">End Location</option>
+				      </select>
+				    </div>
+				  </div>
+				  <div class="form-group">
+				     <select class="form-control" id="tr" onchange="setclassprice()">
+				      	<option value="0">Select Train</option>
+				      </select>
+				  </div>
+				  <div class="form-group">
+				    
+				    <select class="form-control" id="ti" onchange="setclassprice()">
+				      	<option value="0">Select Ticket</option>
+				      </select>
+
+				  </div>
+				   <div class="form-group">
+				      
+				      <input type="date" class="form-control" id="date">
+				    </div>
+
+				    <div class="form-group">
+				     
+				      <input type="text" class="form-control" id="pno" >
+				    </div>
+
+				    <div class="form-group">
+				      
+				      <input type="email" class="form-control" id="mail"  >
+				    </div>
+				  <div class="form-row">
+				   
+
+				</div>
+				    <div align="center">
+				    	<button type="button" class="btn btn-primary" onclick="submit2()" style="width: 100%">Submit</button>
+				    </div>
+				  
+				</form>
+			</div>
+		</div>
+	</div>
+
+
+
+
+<!--===============================================================================================-->
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+	<script src="js/bootbox/bootbox.all.min.js"></script>
+
+
+<script type="text/javascript">
+	var setrain;
+	function submit2() {
+		let st=document.getElementById("start").value;
+		let en=document.getElementById("end").value;
+		let id=document.getElementById("tr").value;
+		let ti=document.getElementById("ti").value;
+		let date=document.getElementById("date").value;
+		let pn=document.getElementById("pno").value;
+		let mail=document.getElementById("mail").value;
+		let nic=null;
+		let caname=null;
+		let ex=null;
+		let csv=null;
+		let cnum=null;
+
+
+
+
+		bootbox.confirm({
+		    
+		    message: "is government employees",
+		    buttons: {
+		        cancel: {
+		            label: '<i class="fa fa-times " ></i> No'
+		        },
+		        confirm: {
+		            label: '<i class="fa fa-check "></i> yes'
+		        }
+		    },
+		    callback: function (result) {
+		        console.log('This was logged in the callback: ' + result);
+		        if (result) {
+		        	
+
+		        	bootbox.prompt("Enter Nic Number!", function(result){ 
+					    if(result!=null && result!=''){
+
+					    	nic=result;
+					    	let ch=0;
+
+					    	 
+
+					    		$.ajax({
+									url: 'http://localhost:8187/employee/'+nic,
+									type: 'GET',
+									//contentType:'application/json',
+									//data: JSON.stringify(json3),
+									 dataType: 'json',
+									success: function(response)
+									{	
+																                	
+										console.log(response);
+
+										ti=(ti/100)*95;
+
+										ch=1;
+
+										let la="<b>start : </b>"+st+"<br>"+"<b>End : </b>"+en+"<br> <b>date : </b>"+date+"<br><b>value : </b>"+ti+"<br>";
+
+										bootbox.prompt({
+										    title: "Please select Payment method",
+										    message: '',
+										    inputType: 'radio',
+										    inputOptions: [
+										    {
+										        text: 'Dialog',
+										        value: '1',
+										    },
+										    {
+										        text: 'Card',
+										        value: '2',
+										    }
+										    ],
+										    callback: function (result) {
+										        console.log(result);
+										        let pno=null;
+										        let pin=null;
+
+										        if(result=='1'){
+										        	bootbox.prompt({
+													    title: "Enter Phone no : ",
+													    inputType: 'text',
+													    callback: function (result) {
+													    	pno=result;
+													        console.log(result);
+													        bootbox.prompt({
+															    title: "Enter pin no : ",
+															    inputType: 'number',
+															    callback: function (result) {
+															    	console.log(result);
+															    	pin=result;
+															    	var json = {number:pno,pin:pin,price:ti};
+															    	$.ajax({
+														                url: 'http://localhost:8186/epay/ezcach',
+														                type: 'POST',
+														                contentType:'application/json',
+														                data: JSON.stringify(json),
+														                
+														                success: function(response)
+														                {	
+														                	console.log("epay done");
+														                	console.log(response);
+														                	var json2 = {no:pn,massage:'booking done'};
+
+														                	$.ajax({
+																                url: 'http://localhost:8184/dialog/sms',
+																                type: 'POST',
+																                contentType:'application/json',
+																                data: JSON.stringify(json2),
+																                // dataType: 'json',
+																                success: function(response)
+																                {	
+																                	console.log("sms done dialog em");
+																                	console.log(response);
+
+																                	var json3 = {to:mail,sub:'booking done dialog em',body:'<html><html><head></head><body>'+la+'</body></html>'};
+																                	console.log(json3);
+
+																                	$.ajax({
+																		                url: 'http://localhost:8188/email/send',
+																		                type: 'POST',
+																		                contentType:'application/json',
+																		                data: JSON.stringify(json3),
+																		                // dataType: 'json',
+																		                success: function(response)
+																		                {	
+																		                	
+																		                	console.log(response);
+
+																		                	
+
+																		                	
+																		                },
+																		                error: function(response) {
+																							console.log(response); 
+																						}
+																							
+																							
+																		         	});
+																                	
+
+																                	
+																                },
+																                error: function(response) {
+																                	console.log("sms fail");
+																					console.log(response); 
+																				}
+																					
+																					
+																         	});
+
+
+
+														                	
+														                },
+														                error: function(response) {
+														                	console.log("epay fail");
+																			console.log(response); 
+																		}
+																			
+																			
+														         });
+
+															        
+															    }
+															});
+													    }
+													});
+										        	
+
+										        }
+										        else if(result=='2'){
+										        	bootbox.prompt({
+													    title: "Enter card no : ",
+													    inputType: 'text',
+													    callback: function (result) {
+													    	cnum=result;
+													        console.log(result);
+													        bootbox.prompt({
+															    title: "Enter csv no : ",
+															    inputType: 'number',
+															    callback: function (result) {
+															    	csv=result;
+															    	bootbox.prompt({
+																	    title: "Enter name in card  : ",
+																	    inputType: 'text',
+															    		callback: function (result) {
+															    			caname=result;
+															    			bootbox.prompt({
+																			    title: "Enter exp date : ",
+																			    inputType: 'text',
+																	    		callback: function (result) {
+																	    			ex=result;
+																			    	console.log(result);
+																			    	pin=result;
+																			    	var json = {number:cnum,name:caname,exday:ex,cvv:csv,price:ti};
+																			    	console.log(json);
+																			    	$.ajax({
+																		                url: 'http://localhost:8185/sampath/payment',
+																		                type: 'POST',
+																		                contentType:'application/json',
+																		                data: JSON.stringify(json),
+																		                
+																		                success: function(response)
+																		                {	
+																		                	console.log("epay done");
+																		                	console.log(response);
+																		                	var json2 = {no:pn,massage:'booking done'};
+
+																		                	$.ajax({
+																				                url: 'http://localhost:8184/dialog/sms',
+																				                type: 'POST',
+																				                contentType:'application/json',
+																				                data: JSON.stringify(json2),
+																				                // dataType: 'json',
+																				                success: function(response)
+																				                {	
+																				                	console.log("sms done");
+																				                	console.log(response);
+
+																				                	var json3 = {to:mail,sub:'booking done with card em',body:'<html><html><head></head><body>'+la+'</body></html>'};
+																				                	console.log(json3);
+
+																				                	$.ajax({
+																						                url: 'http://localhost:8188/email/send',
+																						                type: 'POST',
+																						                contentType:'application/json',
+																						                data: JSON.stringify(json3),
+																						                // dataType: 'json',
+																						                success: function(response)
+																						                {	
+																						                	
+																						                	console.log(response);
+
+																						                	
+
+																						                	
+																						                },
+																						                error: function(response) {
+																											console.log(response); 
+																										}
+																											
+																											
+																						         	});
+																				                	
+
+																				                	
+																				                },
+																				                error: function(response) {
+																				                	console.log("sms fail");
+																									console.log(response); 
+																								}
+																									
+																									
+																				         	});
+
+
+
+																		                	
+																		                },
+																		                error: function(response) {
+																		                	console.log("epay fail");
+																							console.log(response); 
+																						}
+																							
+																							
+																		         });
+																			    }
+																			});
+																	    }
+															       }); 
+															    }
+															});
+													    }
+													});
+										        	//----
+										        }
+										    }
+										});						                	
+
+																                	
+									},
+									error: function(response) {
+										console.log(response); 
+										bootbox.alert("NIC : "+nic+"number not in database try again");
+										
+									}
+																					
+																					
+								});
+
+
+					    	//---------------------------------
+
+					    		
+
+					    	//---------------------------------
+					    }
+					});
+
+		        	
+		        }
+		        else{
+		        	bootbox.prompt({
+								    title: "Please select Payment method",
+								    message: '',
+								    inputType: 'radio',
+								    inputOptions: [
+								    {
+								        text: 'Dialog',
+								        value: '1',
+								    },
+								    {
+								        text: 'Card',
+								        value: '2',
+								    }
+								    ],
+								    callback: function (result) {
+								        console.log(result);
+								        let pno=null;
+								        let pin=null;
+
+								        if(result=='1'){
+								        	bootbox.prompt({
+											    title: "Enter Phone no : ",
+											    inputType: 'text',
+											    callback: function (result) {
+											    	pno=result;
+											        console.log(result);
+											        bootbox.prompt({
+													    title: "Enter pin no : ",
+													    inputType: 'number',
+													    callback: function (result) {
+													    	console.log(result);
+													    	pin=result;
+													    	var json = {number:pno,pin:pin,price:ti};
+													    	$.ajax({
+												                url: 'http://localhost:8186/epay/ezcach',
+												                type: 'POST',
+												                contentType:'application/json',
+												                data: JSON.stringify(json),
+												                
+												                success: function(response)
+												                {	
+												                	console.log("epay done");
+												                	console.log(response);
+												                	var json2 = {no:pn,massage:'booking done'};
+
+												                	$.ajax({
+														                url: 'http://localhost:8184/dialog/sms',
+														                type: 'POST',
+														                contentType:'application/json',
+														                data: JSON.stringify(json2),
+														                // dataType: 'json',
+														                success: function(response)
+														                {	
+														                	console.log("sms done dialog non em");
+														                	console.log(response);
+
+														                	var json3 = {to:mail,sub:'booking done',body:'<html><html><head></head><body>'+la+'</body></html>'};
+														                	console.log(json3);
+
+														                	$.ajax({
+																                url: 'http://localhost:8188/email/send',
+																                type: 'POST',
+																                contentType:'application/json',
+																                data: JSON.stringify(json3),
+																                // dataType: 'json',
+																                success: function(response)
+																                {	
+																                	
+																                	console.log(response);
+
+																                	
+
+																                	
+																                },
+																                error: function(response) {
+																					console.log(response); 
+																				}
+																					
+																					
+																         	});
+														                	
+
+														                	
+														                },
+														                error: function(response) {
+														                	console.log("sms fail");
+																			console.log(response); 
+																		}
+																			
+																			
+														         	});
+
+
+
+												                	
+												                },
+												                error: function(response) {
+												                	console.log("epay fail");
+																	console.log(response); 
+																}
+																	
+																	
+												         });
+
+													        
+													    }
+													});
+											    }
+											});
+								        	
+
+								        }
+								        else if(result=='2'){
+								        	bootbox.prompt({
+											    title: "Enter card no : ",
+											    inputType: 'text',
+											    callback: function (result) {
+											    	cnum=result;
+											        console.log(result);
+											        bootbox.prompt({
+													    title: "Enter csv no : ",
+													    inputType: 'number',
+													    callback: function (result) {
+													    	csv=result;
+													    	bootbox.prompt({
+															    title: "Enter name in card  : ",
+															    inputType: 'text',
+													    		callback: function (result) {
+													    			caname=result;
+													    			bootbox.prompt({
+																	    title: "Enter exp date : ",
+																	    inputType: 'text',
+															    		callback: function (result) {
+															    			ex=result;
+																	    	console.log(result);
+																	    	pin=result;
+																	    	var json = {number:cnum,name:caname,exday:ex,cvv:csv,price:ti};
+																	    	console.log(json);
+																	    	$.ajax({
+																                url: 'http://localhost:8185/sampath/payment',
+																                type: 'POST',
+																                contentType:'application/json',
+																                data: JSON.stringify(json),
+																                
+																                success: function(response)
+																                {	
+																                	console.log("epay done");
+																                	console.log(response);
+																                	var json2 = {no:pn,massage:'booking done'};
+
+																                	$.ajax({
+																		                url: 'http://localhost:8184/dialog/sms',
+																		                type: 'POST',
+																		                contentType:'application/json',
+																		                data: JSON.stringify(json2),
+																		                // dataType: 'json',
+																		                success: function(response)
+																		                {	
+																		                	console.log("sms done");
+																		                	console.log(response);
+
+																		                	var json3 = {to:mail,sub:'booking done with card non em',body:'<html><html><head></head><body>'+la+'</body></html>'};
+																		                	console.log(json3);
+
+																		                	$.ajax({
+																				                url: 'http://localhost:8188/email/send',
+																				                type: 'POST',
+																				                contentType:'application/json',
+																				                data: JSON.stringify(json3),
+																				                // dataType: 'json',
+																				                success: function(response)
+																				                {	
+																				                	
+																				                	console.log(response);
+
+																				                	
+
+																				                	
+																				                },
+																				                error: function(response) {
+																									console.log(response); 
+																								}
+																									
+																									
+																				         	});
+																		                	
+
+																		                	
+																		                },
+																		                error: function(response) {
+																		                	console.log("sms fail");
+																							console.log(response); 
+																						}
+																							
+																							
+																		         	});
+
+
+
+																                	
+																                },
+																                error: function(response) {
+																                	console.log("epay fail");
+																					console.log(response); 
+																				}
+																					
+																					
+																         });
+																	    }
+																	});
+															    }
+													       }); 
+													    }
+													});
+											    }
+											});
+								        	//----
+								        }
+								    }
+								});
+
+		        }
+		    }
+		});
+
+	}
+
+
+
+	function setStartAndEnd() {
+		$.ajax({
+                url: 'http://localhost:8183/trains/details/startlocation',
+                type: 'GET',
+                // data: {billid:billid},
+                dataType: 'json',
+                success: function(response)
+                {	
+                	
+                	// console.log(response);
+                	// console.log(response.length);
+                	var select = document.getElementById("start");
+					for (var i = 0; i < response.length; i++) {
+						select.options[select.options.length] = new Option(response[i],response[i] );
+					}
+
+                	
+                },
+                error: function(response) {
+					console.log(response); 
+				}
+					
+					
+         });
+		$.ajax({
+                url: 'http://localhost:8183/trains/details/endlocation',
+                type: 'GET',
+                // data: {billid:billid},
+                dataType: 'json',
+                success: function(response)
+                {	
+                	
+                	// console.log(response);
+                	// console.log(response.length);
+                	var select = document.getElementById("end");
+					for (var i = 0; i < response.length; i++) {
+						select.options[select.options.length] = new Option(response[i], response[i]);
+					}
+
+                	
+                },
+                error: function(response) {
+					console.log(response); 
+				}
+					
+					
+         });
+	}
+
+function settrain() {
+	let st=document.getElementById("start").value;
+	let en=document.getElementById("end").value;
+
+	
+
+	if(st!=0 && en!=0){
+		$.ajax({
+                url: 'http://localhost:8183/trains/details/'+st+'/'+en,
+                type: 'GET',
+                // data: {billid:billid},
+                dataType: 'json',
+                success: function(response)
+                {	
+                	
+                	console.log(response);
+                	// console.log(response.length);
+                	var select = document.getElementById("tr");
+					for (var i = 0; i < response.length; i++) {
+						select.options[select.options.length] = new Option(response[i].name+'  Start Time : '+response[i].starttime+'   End Time :  '+response[i].endtime, response[i].id);
+					}
+
+                	
+                },
+                error: function(response) {
+					console.log(response); 
+				}
+					
+					
+         });
+	}
+	
+}
+
+function setclassprice(){
+
+	let id=document.getElementById("tr").value;
+
+	$.ajax({
+                url: 'http://localhost:8183/trains/'+id,
+                type: 'GET',
+                // data: {billid:billid},
+                dataType: 'json',
+                success: function(response)
+                {	
+                	
+                	console.log(response);
+                	setrain=response;
+                	// console.log(response.length);
+                 	var select = document.getElementById("ti");
+					
+				select.options[select.options.length] = new Option('  First class : '+response.firstclass, response.firstclass);
+				select.options[select.options.length] = new Option('  Second class : '+response.secondclass, response.secondclass);
+				select.options[select.options.length] = new Option('  third class : '+response.thirdclass, response.thirdclass);
+					
+
+                	
+                },
+                error: function(response) {
+					console.log(response); 
+				}
+					
+					
+         });
+}
+</script>
+
+</body>
+</html>
